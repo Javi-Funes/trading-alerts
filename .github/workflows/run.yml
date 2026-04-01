@@ -2,8 +2,8 @@ name: Trading Alerts
 
 on:
   schedule:
-    - cron: "0 * * * *"   # cada hora en punto (UTC)
-  workflow_dispatch:        # permite ejecución manual desde GitHub
+    - cron: "0 12-21 * * 1-5"   # 9:00-18:00 ART (UTC-3) lunes a viernes
+  workflow_dispatch:              # permite ejecución manual desde GitHub
 
 jobs:
   run:
