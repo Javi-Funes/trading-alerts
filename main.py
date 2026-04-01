@@ -182,7 +182,10 @@ def main():
 
         trailing_sl = max_precio * (1 - trail_pct / 100) if trail_pct > 0 else None
 
-        # ── Evaluar condiciones (prioridad: TP > SL > Trailing) ──
+        # ── Evaluar condiciones ───────────────────────
+        # TP = solo alerta, NO cierra (deja correr ganancias)
+        # SL fijo = cierra (protección bajada inicial)
+        # Trailing = cierra (protección ganancia acumulada)
         nuevo_estado = "OPEN"
 
         try:
@@ -192,21 +195,32 @@ def main():
             tp = 0
             sl = 0
 
+        # TP: alerta informativa, posición sigue ABIERTA
         if tp > 0 and precio >= tp:
-            msg = f"✅ {ticker} → TAKE PROFIT alcanzado\nPrecio: {precio:.2f} | TP: {tp:.2f}"
+            msg = (
+                f"📈 {ticker} → OBJETIVO TP ALCANZADO\n"
+                f"Precio: {precio:.2f} | TP: {tp:.2f}\n"
+                f"Trailing SL activo en: {trailing_sl:.2f} (max: {max_precio:.2f})\n"
+                f"⚡ Posición SIGUE ABIERTA — el trailing cuida tus ganancias"
+            )
+            send_msg(msg)
+            # nuevo_estado sigue siendo "OPEN"
+
+        # SL fijo: cierra (precio cayó antes de llegar al trailing)
+        if sl > 0 and precio <= sl:
+            msg = (
+                f"🛑 {ticker} → STOP LOSS activado\n"
+                f"Precio: {precio:.2f} | SL: {sl:.2f}"
+            )
             send_msg(msg)
             nuevo_estado = "CLOSED"
 
-        elif sl > 0 and precio <= sl:
-            msg = f"🛑 {ticker} → STOP LOSS activado\nPrecio: {precio:.2f} | SL: {sl:.2f}"
-            send_msg(msg)
-            nuevo_estado = "CLOSED"
-
+        # Trailing: cierra (precio retrocedió desde el máximo)
         elif trailing_sl is not None and precio <= trailing_sl:
             msg = (
                 f"🔁 {ticker} → TRAILING STOP activado\n"
-                f"Precio: {precio:.2f} | Trail SL: {trailing_sl:.2f} "
-                f"(Max: {max_precio:.2f}, Trail: {trail_pct}%)"
+                f"Precio: {precio:.2f} | Trail SL: {trailing_sl:.2f}\n"
+                f"Max alcanzado: {max_precio:.2f} | Trail: {trail_pct}%"
             )
             send_msg(msg)
             nuevo_estado = "CLOSED"
