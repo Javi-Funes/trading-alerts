@@ -2,29 +2,29 @@ name: Trading Alerts
 
 on:
   schedule:
-    - cron: "0 * * * *"  # cada 1 hora
-  workflow_dispatch:
+    - cron: "0 * * * *"   # cada hora en punto (UTC)
+  workflow_dispatch:        # permite ejecución manual desde GitHub
 
 jobs:
   run:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clonar repo
-        uses: actions/checkout@v3
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
 
-      - name: Configurar Python
-        uses: actions/setup-python@v4
+      - name: Configurar Python 3.11
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - name: Instalar dependencias
         run: pip install pandas requests yfinance
 
-      - name: Ejecutar script
+      - name: Ejecutar script de alertas
         env:
-          SHEET_URL: ${{ secrets.SHEET_URL }}
-          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          CHAT_ID: ${{ secrets.CHAT_ID }}
-          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          SHEET_URL:       ${{ secrets.SHEET_URL }}
+          TELEGRAM_TOKEN:  ${{ secrets.TELEGRAM_TOKEN }}
+          CHAT_ID:         ${{ secrets.CHAT_ID }}
+          WEBHOOK_URL:     ${{ secrets.WEBHOOK_URL }}
         run: python main.py
